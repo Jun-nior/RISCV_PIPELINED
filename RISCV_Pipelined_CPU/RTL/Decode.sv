@@ -4,9 +4,9 @@ module Decode_stage #(
 ) (
     input                           clk,
     input                           rst_n,
-    input                           RegWriteW,
-    input   [4:0]                   RD_W,
-    input   [ADDR_WIDTH - 1 : 0]    InsD,
+    input                           RegWrite_W,
+    input   [4:0]                   rd_W,
+    input   [ADDR_WIDTH - 1 : 0]    Ins_D,
     input   [ADDR_WIDTH - 1 : 0]    PC_D,
     input   [ADDR_WIDTH - 1 : 0]    PC_4D,
     input   [DAT_WIDTH - 1 : 0]     Result_W,
@@ -43,7 +43,7 @@ logic [31:0]    rdata2_D;
 logic           RegWrite_r;
 logic           ALUSrc_r;
 logic           MemWrite_r;
-logic           MemWrite_r;
+logic           MemRead_r;
 logic           Branch_r;
 logic           MemtoReg_r;
 logic [3:0]     control_o_r;  
@@ -57,7 +57,7 @@ logic [31:0]    PC_D_r;
 logic [31:0]    PC_4D_r; 
 
 Control_Unit Control_Unit (
-    .instruction(InsD[6:0]),
+    .instruction(Ins_D[6:0]),
     .Branch(Branch_D),
     .MemRead(MemRead_D),
     .MemtoReg(MemtoReg_D),
@@ -69,26 +69,26 @@ Control_Unit Control_Unit (
 
 ALU_Control ALU_Control (
     .ALUOp(ALUOP_D),
-    .func7(InsD[30]),
-    .func3(InsD[14:12]),
+    .func7(Ins_D[30]),
+    .func3(Ins_D[14:12]),
     .control_o(control_o_D)
 );
 
 Register_File Register_File (
     .clk(clk),
     .rst_n(rst_n),
-    .rs1(InsD[19:15]),
-    .rs2(InsD[24:20]),
-    .rd(RD_W),
-    .RegWrite(RegWriteW),
+    .rs1(Ins_D[19:15]),
+    .rs2(Ins_D[24:20]),
+    .rd(rd_W),
+    .RegWrite(RegWrite_W),
     .wdata(Result_W),
     .rdata1(rdata1_D),
     .rdata2(rdata2_D)
 );
 
 Immediate_Generator Immediate_Generator (
-    .instruction(InsD),
-    .opcode(InsD[6:0]),
+    .instruction(Ins_D),
+    .opcode(Ins_D[6:0]),
     .ImmExt(ImmExt_D)
 );
 
@@ -120,8 +120,9 @@ always @(posedge clk or negedge rst_n) begin
         ImmExt_r   <= ImmExt_D;
         rdata1_r   <= rdata1_D;
         rdata2_r   <= rdata2_D;
-        rs1_r      <= InsD[19:15];
-        rs2_r      <= InsD[24:20];
+        rs1_r      <= Ins_D[19:15];
+        rs2_r      <= Ins_D[24:20];
+        rd_r       <= Ins_D[11:7];
         PC_D_r     <= PC_D;
         PC_4D_r    <= PC_4D;
     end
@@ -139,7 +140,7 @@ assign rdata1_E       = rdata1_r;
 assign rdata2_E       = rdata2_r;
 assign rs1_E       = rs1_r;
 assign rs2_E       = rs2_r;
-assign rd_E       = rs2_r;
+assign rd_E       = rd_r;
 assign PC_E        = PC_D_r;
 assign PC_4E       = PC_4D_r;
 

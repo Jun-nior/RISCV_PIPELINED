@@ -14,17 +14,10 @@ always @(posedge clk or negedge rst_n) begin
             i_mem[i] <= 'b0;
         end
     end else begin
-        i_mem[0] = 32'b0;
-        i_mem[4] = 32'b000000_11001_10000_000_01101_0110011;
-        i_mem[8] = 32'b000000_00011_00010_111_00001_0110011;
-        i_mem[12] = 32'b000000000011_10101_000_10110_0010011;
-        i_mem[16] = 32'b0100000_00100_01000_000_00111_0110011;
-        i_mem[20] = 32'b000000001111_00101_010_01000_0000011;
-        i_mem[24] = 32'b0000000_01110_00110_010_01010_0100011;
-        i_mem[28] = 32'h00948663;
+        $readmemh("./RTL/memfile.hex", i_mem);
     end
 end
 
-assign im_o = i_mem[raddr];
+assign im_o = i_mem[raddr[ADDR_WIDTH - 1 : 2]];
 
 endmodule

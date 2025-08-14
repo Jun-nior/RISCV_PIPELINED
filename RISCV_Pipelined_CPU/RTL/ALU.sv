@@ -16,14 +16,13 @@ logic           zero_reg;
 logic           overflow_reg;
 logic           carry_reg; 
 logic           negative_reg;
+logic [32:0] temp_result;
 
 always @(control_i or in1 or in2) begin
-    // Mặc định các cờ là 0
-    zero_reg = 1'b0;
-    overflow_reg = 1'b0;
-    carry_reg = 1'b0;
+zero_reg = 1'b0;
+overflow_reg = 1'b0;
+carry_reg = 1'b0;
 
-    logic [32:0] temp_result;
 
     case (control_i)
         4'b0000: begin // AND
@@ -53,11 +52,10 @@ always @(control_i or in1 or in2) begin
         end
     endcase
 
-    // Cờ Zero được cập nhật dựa trên kết quả cuối cùng của phép toán
     if (ALU_o_reg == 32'h0) begin
         zero_reg = 1'b1;
     end
-    negative_reg = ALU_o_reg[31]
+    negative_reg = ALU_o_reg[31];
 end
 
 assign ALU_o = ALU_o_reg;

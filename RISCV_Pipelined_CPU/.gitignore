@@ -1,0 +1,17 @@
+CPU_Top/
+.visualizer/
+qrun.log
+snapshot
+stats_log
+top_dus
+history
+history.cnt
+*.wlf
+transcript
+*.bin
+*.db
+RISCV_CPU/base_test_0.ucdb
+*.log
+*.logerr
+*.vstf
+qrun.out/

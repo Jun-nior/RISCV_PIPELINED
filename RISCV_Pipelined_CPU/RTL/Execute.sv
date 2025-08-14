@@ -7,6 +7,7 @@ module Execute_Stage #(
     input                           RegWrite_E,
     input                           ALUSrc_E,
     input                           MemWrite_E,
+    input                           MemRead_E,
     input                           Branch_E,
     input                           MemtoReg_E,
     input   [DAT_WIDTH - 1 : 0]     wdata_W,
@@ -22,11 +23,12 @@ module Execute_Stage #(
     output                          PCSrc_E,
     output                          RegWrite_M,
     output                          MemWrite_M,
+    output                          MemRead_M,
     output                          MemtoReg_M,
-    output  [4:0]                   rd_m,
+    output  [4:0]                   rd_M,
     output  [ADDR_WIDTH - 1 : 0]    PC_4M,
     output  [DAT_WIDTH - 1 : 0]     wdata_M,
-    output  [DAT_WIDTH - 1 : 0]     ALU_result_M,
+    output  [DAT_WIDTH - 1 : 0]     ALU_result_M
 );
 
 logic   [31:0]  SrcB_E;
@@ -35,6 +37,7 @@ logic           zero_E;
 
 logic           RegWrite_r;
 logic           MemWrite_r;
+logic           MemRead_r;
 logic           MemtoReg_r;
 
 logic   [4:0]                   rd_r;
@@ -76,6 +79,7 @@ always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         RegWrite_r <= 1'b0; 
         MemWrite_r <= 1'b0; 
+        MemRead_r <= 1'b0; 
         MemtoReg_r <= 1'b0;
         rd_r <= 5'h00;
         PC_4E_r <= 32'h00000000; 
@@ -85,8 +89,9 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         RegWrite_r <= RegWrite_E; 
         MemWrite_r <= MemWrite_E; 
+        MemRead_r <= MemRead_E; 
         MemtoReg_r <= MemtoReg_E;
-        rd_r <= RD_E;
+        rd_r <= rd_E;
         PC_4E_r <= PC_4E; 
         rdata2_r <= rdata2_E; 
         ALU_Result_r <= Result;
@@ -95,8 +100,9 @@ end
 
 assign RegWrite_M = RegWrite_r;
 assign MemWrite_M = MemWrite_r;
+assign MemRead_M = MemRead_r;
 assign MemtoReg_M = MemtoReg_r;
-assign rd_m = rd_r;
+assign rd_M = rd_r;
 assign PC_4M = PC_4E_r;
 assign wdata_M = rdata2_r;
 assign ALU_result_M = ALU_Result_r;
