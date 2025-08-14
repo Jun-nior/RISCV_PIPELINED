@@ -39,6 +39,10 @@ logic [3:0]     control_o_D;
 logic [31:0]    ImmExt_D;
 logic [31:0]    rdata1_D;
 logic [31:0]    rdata2_D;
+logic [31:0]    F_rdata1;
+logic [31:0]    F_rdata2;
+logic           ForwardID_A;
+logic           ForwardID_B;
 
 logic           RegWrite_r;
 logic           ALUSrc_r;
@@ -92,6 +96,30 @@ Immediate_Generator Immediate_Generator (
     .ImmExt(ImmExt_D)
 );
 
+ID_Hazard ID_Hazard (
+    .rst_n(rst_n),
+    .RegWrite_W(RegWrite_W),
+    .rd_W(rd_W),
+    .Ins_D(Ins_D),
+
+    .ForwardID_A(ForwardID_A),
+    .ForwardID_B(ForwardID_B)
+);
+
+Mux Forward_Mux_A (
+    .sel(ForwardID_A),
+    .a(rdata1_D),
+    .b(Result_W),
+    .mux_o(F_rdata1)
+);
+
+Mux Forward_Mux_B (
+    .sel(ForwardID_B),
+    .a(rdata2_D),
+    .b(Result_W),
+    .mux_o(F_rdata2)
+);
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         RegWrite_r <= 1'b0;
@@ -118,8 +146,8 @@ always @(posedge clk or negedge rst_n) begin
         MemtoReg_r <= MemtoReg_D;
         control_o_r <= control_o_D;
         ImmExt_r   <= ImmExt_D;
-        rdata1_r   <= rdata1_D;
-        rdata2_r   <= rdata2_D;
+        rdata1_r   <= F_rdata1;
+        rdata2_r   <= F_rdata2;
         rs1_r      <= Ins_D[19:15];
         rs2_r      <= Ins_D[24:20];
         rd_r       <= Ins_D[11:7];

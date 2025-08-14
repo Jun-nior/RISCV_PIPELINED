@@ -12,6 +12,8 @@ module Execute_Stage #(
     input                           MemtoReg_E,
     input   [DAT_WIDTH - 1 : 0]     wdata_W,
     input   [3:0]                   control_o_i,
+    input   [1:0]                   ForwardA_E,
+    input   [1:0]                   ForwardB_E,
     input   [DAT_WIDTH - 1 : 0]     rdata1_E,
     input   [DAT_WIDTH - 1 : 0]     rdata2_E,
     input   [DAT_WIDTH - 1 : 0]     ImmExt_E,
@@ -44,16 +46,18 @@ logic   [4:0]                   rd_r;
 logic   [31:0]                  ALU_Result_r;
 logic   [ADDR_WIDTH - 1 : 0]    PC_4E_r;
 logic   [DAT_WIDTH - 1 : 0]     rdata2_r;
+logic   [DAT_WIDTH - 1 : 0]     SrcA_E;
+logic   [DAT_WIDTH - 1 : 0]     SrcB_E2;
 
 Mux ALU_Mux (
     .sel(ALUSrc_E),
-    .a(rdata2_E),
+    .a(SrcB_E2),
     .b(ImmExt_E),
     .mux_o(SrcB_E) 
 );
 
 ALU ALU (
-    .in1(rdata1_E),
+    .in1(SrcA_E),
     .in2(SrcB_E),
     .control_i(control_o_i),
     .ALU_o(Result),
@@ -75,6 +79,22 @@ AND AND (
     .and_o(PCSrc_E)
 );
 
+Mux_3_1 SrcA (
+    .sel(ForwardA_E),
+    .a(rdata1_E),
+    .b(wdata_W),
+    .c(ALU_result_M),
+    .mux_o(SrcA_E)
+);
+
+Mux_3_1 SrcB (
+    .sel(ForwardB_E),
+    .a(rdata2_E),
+    .b(wdata_W),
+    .c(ALU_result_M),
+    .mux_o(SrcB_E2)
+);
+
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         RegWrite_r <= 1'b0; 
@@ -93,7 +113,7 @@ always @(posedge clk or negedge rst_n) begin
         MemtoReg_r <= MemtoReg_E;
         rd_r <= rd_E;
         PC_4E_r <= PC_4E; 
-        rdata2_r <= rdata2_E; 
+        rdata2_r <= SrcB_E2; 
         ALU_Result_r <= Result;
     end
 end

@@ -18,6 +18,8 @@
 ./RTL/Decode.sv
 ./RTL/Execute.sv
 ./RTL/Fetch.sv
+./RTL/Forwarding_Hazard.sv
+./RTL/ID_Hazard.sv
 ./RTL/Memory.sv
 ./RTL/Writeback.sv
 

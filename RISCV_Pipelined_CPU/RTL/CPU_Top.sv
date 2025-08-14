@@ -41,6 +41,8 @@ logic   [DAT_WIDTH - 1 : 0]     wdata_M;
 logic   [DAT_WIDTH - 1 : 0]     ALU_result_M;
 logic   [DAT_WIDTH - 1 : 0]     ALU_result_W;
 logic   [DAT_WIDTH - 1 : 0]     rdata_W;
+logic   [1:0]                   ForwardA_E;
+logic   [1:0]                   ForwardB_E;
 
 Fetch_Stage Fetch (
     .clk(clk),
@@ -89,7 +91,7 @@ Execute_Stage Execute (
     .MemRead_E(MemRead_E),
     .Branch_E(Branch_E),
     .MemtoReg_E(MemtoReg_E),
-    .wdata_W(),
+    .wdata_W(Result_W),
     .control_o_i(control_o),
     .rdata1_E(rdata1_E),
     .rdata2_E(rdata2_E),
@@ -97,6 +99,8 @@ Execute_Stage Execute (
     .rd_E(rd_E),
     .PC_E(PC_E),
     .PC_4E(PC_4E),
+    .ForwardA_E(ForwardA_E),
+    .ForwardB_E(ForwardB_E),
 
     .PCTarget_E(PCTarget_E),
     .PCSrc_E(PCSrc_E),
@@ -139,6 +143,19 @@ Writeback_stage Writeback (
     .rdata_W(rdata_W),
 
     .Result_W(Result_W)
+);
+
+F_Hazard F_Hazard (
+    .rst_n(rst_n),
+    .RegWrite_M(RegWrite_M),
+    .RegWrite_W(RegWrite_W),
+    .rd_M(rd_M),
+    .rd_W(rd_W),
+    .rs1_E(rs1_E),
+    .rs2_E(rs2_E),
+
+    .ForwardA_E(ForwardA_E),
+    .ForwardB_E(ForwardB_E)
 );
 
 endmodule
