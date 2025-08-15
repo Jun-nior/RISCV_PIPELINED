@@ -25,7 +25,9 @@ module Decode_stage #(
     output  [4:0]                   rs2_E,
     output  [4:0]                   rd_E,
     output  [ADDR_WIDTH - 1 : 0]    PC_E,
-    output  [ADDR_WIDTH - 1 : 0]    PC_4E
+    output  [ADDR_WIDTH - 1 : 0]    PC_4E,
+    output                          PC_Write,
+    output                          IF_ID_Write
 );
 
 logic           RegWrite_D;
@@ -43,6 +45,7 @@ logic [31:0]    F_rdata1;
 logic [31:0]    F_rdata2;
 logic           ForwardID_A;
 logic           ForwardID_B;
+logic           Stall_E;
 
 logic           RegWrite_r;
 logic           ALUSrc_r;
@@ -120,6 +123,17 @@ Mux Forward_Mux_B (
     .mux_o(F_rdata2)
 );
 
+LW_Hazard LW_Hazard (
+    .MemRead_E(MemRead_r), 
+    .rd_E(rd_r),           
+    .rs1_D(Ins_D[19:15]),
+    .rs2_D(Ins_D[24:20]),
+
+    .PC_Write(PC_Write),
+    .IF_ID_Write(IF_ID_Write),
+    .Stall_E(Stall_E)
+);
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         RegWrite_r <= 1'b0;
@@ -137,6 +151,14 @@ always @(posedge clk or negedge rst_n) begin
         rd_r      <= 5'h0;
         PC_D_r     <= 32'h0;
         PC_4D_r    <= 32'h0;
+    end else if (Stall_E) begin
+        RegWrite_r <= 1'b0;
+        ALUSrc_r   <= 1'b0;
+        MemWrite_r <= 1'b0;
+        MemRead_r  <= 1'b0;
+        Branch_r   <= 1'b0;
+        MemtoReg_r <= 1'b0;
+        control_o_r <= 4'h0;
     end else begin
         RegWrite_r <= RegWrite_D;
         ALUSrc_r   <= ALUSrc_D;

@@ -44,9 +44,14 @@ logic   [DAT_WIDTH - 1 : 0]     rdata_W;
 logic   [1:0]                   ForwardA_E;
 logic   [1:0]                   ForwardB_E;
 
+logic                           PC_Write;
+logic                           IF_ID_Write;
+
 Fetch_Stage Fetch (
     .clk(clk),
     .rst_n(rst_n),
+    .PC_Write(PC_Write),
+    .IF_ID_Write(IF_ID_Write),
     .PCTarget_E(PCTarget_E),
     .PCSrc_E(PCSrc_E),
 
@@ -79,7 +84,9 @@ Decode_stage Decode (
     .rs2_E(rs2_E),
     .rd_E(rd_E),
     .PC_E(PC_E),
-    .PC_4E(PC_4E)
+    .PC_4E(PC_4E),
+    .PC_Write(PC_Write),
+    .IF_ID_Write(IF_ID_Write)
 );
 
 Execute_Stage Execute (

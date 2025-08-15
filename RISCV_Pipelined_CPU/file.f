@@ -19,6 +19,7 @@
 ./RTL/Execute.sv
 ./RTL/Fetch.sv
 ./RTL/Forwarding_Hazard.sv
+./RTL/LW_Hazard.sv
 ./RTL/ID_Hazard.sv
 ./RTL/Memory.sv
 ./RTL/Writeback.sv

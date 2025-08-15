@@ -4,6 +4,8 @@ module Fetch_Stage #(
     input                           clk,
     input                           rst_n,
     input                           PCSrc_E,
+    input                           PC_Write,
+    input                           IF_ID_Write,
     input   [ADDR_WIDTH - 1 : 0]    PCTarget_E,
     output  [ADDR_WIDTH - 1 : 0]    Ins_D,
     output  [ADDR_WIDTH - 1 : 0]    PC_4D,
@@ -30,6 +32,7 @@ Program_Counter Program_Counter(
     .clk(clk),
     .rst_n(rst_n),
     .PC_i(PC_F),
+    .PC_Write(PC_Write),
     .PC_o(PCF)
 );
 
@@ -50,10 +53,14 @@ always @(posedge clk or negedge rst_n) begin
         InsF_r <= 'h0;
         PCF_r <= 'h0;
         PC_4F_r <= 'h0;
-    end else begin
+    end else if (IF_ID_Write) begin
         InsF_r <= InsF;
         PCF_r <= PCF;
         PC_4F_r <= PC_4F;
+    end else begin
+        InsF_r <= InsF_r;
+        PCF_r <= PCF_r;
+        PC_4F_r <= PC_4F_r;
     end
 end
 

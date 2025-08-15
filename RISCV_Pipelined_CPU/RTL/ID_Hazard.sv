@@ -1,7 +1,7 @@
-module ID_Hazard (
+module ID_Hazard ( // for add x1 , ..., ..., add x2, x1
     input           rst_n,
     input           RegWrite_W,
-    input           rd_W,
+    input   [4:0]   rd_W,
     input   [31:0]  Ins_D,
 
     output          ForwardID_A,
