@@ -5,6 +5,7 @@ module Decode_stage #(
     input                           clk,
     input                           rst_n,
     input                           RegWrite_W,
+    input                           PCSrc_E, // for flush
     input   [4:0]                   rd_W,
     input   [ADDR_WIDTH - 1 : 0]    Ins_D,
     input   [ADDR_WIDTH - 1 : 0]    PC_D,
@@ -151,7 +152,7 @@ always @(posedge clk or negedge rst_n) begin
         rd_r      <= 5'h0;
         PC_D_r     <= 32'h0;
         PC_4D_r    <= 32'h0;
-    end else if (Stall_E) begin
+    end else if (Stall_E || PCSrc_E) begin
         RegWrite_r <= 1'b0;
         ALUSrc_r   <= 1'b0;
         MemWrite_r <= 1'b0;

@@ -39,6 +39,9 @@ carry_reg = 1'b0;
                 overflow_reg = 1'b1;
             end
         end
+        4'b0100: begin // XOR
+            ALU_o_reg = in1 ^ in2;
+        end
         4'b0110: begin // SUB
             temp_result = {1'b0, in1} - {1'b0, in2};
             ALU_o_reg = temp_result[31:0];

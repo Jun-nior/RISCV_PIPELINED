@@ -22,7 +22,7 @@ module CPU_Top_tb_top;
         rst_n = 1;
 
 
-        repeat(10) begin
+        repeat(15) begin
             @(posedge clk);
         end
         $finish;

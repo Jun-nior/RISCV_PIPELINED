@@ -64,6 +64,7 @@ Decode_stage Decode (
     .clk(clk),
     .rst_n(rst_n),
     .RegWrite_W(RegWrite_W),
+    .PCSrc_E(PCSrc_E),
     .rd_W(rd_W),
     .Ins_D(Ins_D),
     .PC_D(PC_D),
