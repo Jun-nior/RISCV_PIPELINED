@@ -24,5 +24,6 @@
 ./RTL/Memory.sv
 ./RTL/Writeback.sv
 
+./TB/cpu_pkg.sv
 ./TB/tb.sv
 // ./TB/memfile.hex

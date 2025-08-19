@@ -1,10 +1,39 @@
+`include "uvm_macros.svh"
+import uvm_pkg::*;
+import cpu_pkg::*;
+`include "dut_if.sv"
+// `include "sva_checker.sv"
+
 module CPU_Top_tb_top;
 
     logic clk, rst_n;
 
+    cpu_interface cpu_if (
+        .clk(clk)
+    );
+
+    fetch_interface fetch_if (
+        .clk(clk)
+    );
+
+    writeback_interface wb_if (
+        .clk(clk)
+    );
+
+    decode_interface dc_if (
+        .clk(clk)
+    );
+
     CPU_Top dut (
         .clk(clk),
-        .rst_n(rst_n)
+        .rst_n(cpu_if.rst_n),
+        .wdata_i(fetch_if.ins_i),
+        .PC_o(fetch_if.PC_o),
+        .rd(wb_if.rd_W),
+        .RegWrite(wb_if.RegWrite_W),
+        .result_W_o(wb_if.result_W),
+        .rs1(dc_if.rs1),
+        .rs2(dc_if.rs2)
     );
 
     initial begin
@@ -15,17 +44,11 @@ module CPU_Top_tb_top;
     end
 
     initial begin
-        rst_n = 0;
-        repeat(2) begin
-            @(posedge clk);
-        end
-        rst_n = 1;
-
-
-        repeat(15) begin
-            @(posedge clk);
-        end
-        $finish;
+        uvm_config_db#(virtual fetch_interface)::set(null,"*","fetch_vif",fetch_if);
+        uvm_config_db#(virtual cpu_interface)::set(null,"*","cpu_vif",cpu_if);
+        uvm_config_db#(virtual writeback_interface)::set(null,"*","wb_vif",wb_if);
+        uvm_config_db#(virtual decode_interface)::set(null,"*","dc_vif",dc_if);
+        run_test("base_test");
     end
 
 endmodule

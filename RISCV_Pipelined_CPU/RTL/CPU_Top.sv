@@ -3,7 +3,17 @@ module CPU_Top #(
     parameter DAT_WIDTH = 32
 ) (
     input   clk,
-    input   rst_n
+    input   rst_n,
+
+    // Test-purpose outputs
+    input   [ADDR_WIDTH - 1 : 0]    wdata_i,
+
+    output  [ADDR_WIDTH - 1 : 0]    PC_o,
+    output  [4:0]                   rd,
+    output                          RegWrite,
+    output  [DAT_WIDTH - 1 : 0]     result_W_o,
+    output  [4:0]                   rs1,
+    output  [4:0]                   rs2
 );
 
 logic                           PCSrc_E;
@@ -54,6 +64,7 @@ Fetch_Stage Fetch (
     .IF_ID_Write(IF_ID_Write),
     .PCTarget_E(PCTarget_E),
     .PCSrc_E(PCSrc_E),
+    .tb_wdata_i(wdata_i),
 
     .Ins_D(Ins_D),
     .PC_D(PC_D),
@@ -165,5 +176,17 @@ F_Hazard F_Hazard (
     .ForwardA_E(ForwardA_E),
     .ForwardB_E(ForwardB_E)
 );
+// Fetch
+assign PC_o = Fetch.PCF;
+
+// Decode
+assign rs1 = Decode.Register_File.rs1;
+assign rs2 = Decode.Register_File.rs2;
+
+// WB
+assign rd = rd_W;
+assign RegWrite = RegWrite_W;
+assign result_W_o = Result_W;
+
 
 endmodule

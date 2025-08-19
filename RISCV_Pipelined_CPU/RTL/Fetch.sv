@@ -9,7 +9,10 @@ module Fetch_Stage #(
     input   [ADDR_WIDTH - 1 : 0]    PCTarget_E,
     output  [ADDR_WIDTH - 1 : 0]    Ins_D,
     output  [ADDR_WIDTH - 1 : 0]    PC_4D,
-    output  [ADDR_WIDTH - 1 : 0]    PC_D
+    output  [ADDR_WIDTH - 1 : 0]    PC_D,
+
+    // test_only
+    input   [ADDR_WIDTH - 1 : 0]    tb_wdata_i
 );
 
 logic [ADDR_WIDTH - 1 : 0]      PC_F;
@@ -36,12 +39,15 @@ Program_Counter Program_Counter(
     .PC_o(PCF)
 );
 
-Instruction_Memory Instruction_Memory (
-    .clk(clk),
-    .rst_n(rst_n),
-    .raddr(PCF),
-    .im_o(InsF)
-);
+// Instruction_Memory Instruction_Memory (
+//     .clk(clk),
+//     .rst_n(rst_n),
+//     .raddr(PCF),
+//     .im_o(InsF)
+// );
+
+
+assign InsF = tb_wdata_i;
 
 AdderPC Adder_PC(
     .PC_o(PCF),
