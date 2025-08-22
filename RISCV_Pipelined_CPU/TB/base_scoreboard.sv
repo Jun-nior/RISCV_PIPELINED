@@ -153,17 +153,20 @@ class im_scoreboard extends base_scoreboard;
                 e_b_imm[0]    = 1'b0;
 
                 signed_b_imm = {{19{e_b_imm[12]}}, e_b_imm};
-                funct3 = fetch_packet.instruction[14:12];
-                case (funct3)
-                    3'b000: // BEQ
-                        branch_taken = (reg_mem[e_rs1] == reg_mem[e_rs2]);
-                    3'b001: // BNE
-                        branch_taken = (reg_mem[e_rs1] != reg_mem[e_rs2]);
-                    default: begin
-                        `uvm_error("FAIL", $sformatf("Unsupported B-type funct3: %b", funct3))
-                        is_match = 0;
-                    end
-                endcase
+
+                if (e_rs1 == e_rd_hz) begin
+                    `uvm_info("HAZARD BEQ", $sformatf("rs1 hazard: e_rs1: %d, e_rd_hz: %d", e_rs1, e_rd_hz), UVM_LOW)
+                    branch_taken = (expected_result_hz == reg_mem[e_rs2]);
+                    expected_result_hz = -1;
+                    e_rd_hz = -1;
+                    hazard = 1;
+                end else if (e_rs2 == e_rd_hz) begin
+                    `uvm_info("HAZARD BEQ", $sformatf("rs2 hazard: e_rs2: %d, e_rd_hz: %d", e_rs2, e_rd_hz), UVM_LOW)
+                    branch_taken = (reg_mem[e_rs1] == expected_result_hz);
+                    expected_result_hz = -1;
+                    e_rd_hz = -1;
+                    hazard = 1;
+                end else branch_taken = (reg_mem[e_rs1] == reg_mem[e_rs2]);
 
                 if (is_match) begin
                     if (branch_taken) begin
