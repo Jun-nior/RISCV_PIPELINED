@@ -40,14 +40,29 @@ endinterface
 interface decode_interface (input logic clk);
 
     logic [4:0]  rs1;       
-    logic [4:0]  rs2;       
+    logic [4:0]  rs2;
+    logic        PCSrc_E;    
+    logic        RegWrite_M;   
 
     clocking tb_cb @(posedge clk);
-        input rs1, rs2;
+        input rs1, rs2, PCSrc_E, RegWrite_M;
     endclocking
 
     modport DUT (
-        output rs1, rs2
+        output rs1, rs2, PCSrc_E, RegWrite_M
     );
 
+endinterface
+
+interface exe_interface (input logic clk);
+    logic [31:0] PC_F;
+    logic        Branch_E;
+
+    clocking tb_cb @(posedge clk);
+        input PC_F, Branch_E;
+    endclocking
+
+    modport DUT (
+        output PC_F, Branch_E
+    );
 endinterface

@@ -5,6 +5,7 @@ class base_env extends uvm_env;
     fetch_agent     fetch_agt;
     wb_agent        wb_agt;
     decode_agent    dc_agt;
+    exe_agent       exe_agt;
     reset_agent     r_agt;
     im_scoreboard   scb;
     base_coverage   cov;
@@ -20,6 +21,7 @@ class base_env extends uvm_env;
         fetch_agt = fetch_agent::type_id::create("fetch_agt",this);
         wb_agt = wb_agent::type_id::create("wb_agt",this);
         dc_agt = decode_agent::type_id::create("dc_agt",this);
+        exe_agt = exe_agent::type_id::create("exe_agt",this);
         scb = im_scoreboard::type_id::create("scb", this);
         cov = base_coverage::type_id::create("cov",this);
     endfunction
@@ -29,6 +31,7 @@ class base_env extends uvm_env;
         fetch_agt.mon.item_collected_port.connect(this.scb.fetch_imp);
         wb_agt.mon.item_collected_port.connect(this.scb.wb_imp);
         dc_agt.mon.item_collected_port.connect(this.scb.dc_imp);
+        exe_agt.mon.item_collected_port.connect(this.scb.exe_imp);
         // fetch_agt.drv.item_driven_port.connect(this.cov.analysis_export);
     endfunction
 endclass
