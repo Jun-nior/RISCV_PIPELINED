@@ -60,7 +60,7 @@ always @(posedge clk or negedge rst_n) begin
         PCF_r <= 'h0;
         PC_4F_r <= 'h0;
     end else if (PCSrc_E) begin // flush
-        InsF_r <= 32'h00000013; // NOP: addi x0, x0, 0
+        InsF_r <= 32'h00000000; // NOP: addi x0, x0, 0
         PCF_r <= 0;
         PC_4F_r <= 0;
     end else if (IF_ID_Write) begin // not stall by lw -> R
