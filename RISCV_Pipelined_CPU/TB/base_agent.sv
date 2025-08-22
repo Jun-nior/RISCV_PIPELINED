@@ -74,6 +74,21 @@ class decode_agent extends base_agent #(decode_item);
     endfunction
 endclass
 
+class exe_agent extends base_agent #(exe_item);
+    `uvm_component_utils(exe_agent)
+
+    function new (string name = "exe_agent", uvm_component parent);
+        super.new(name,parent);
+    endfunction
+
+    virtual function void build_phase (uvm_phase phase);
+        is_active = UVM_PASSIVE;
+        super.build_phase(phase);
+        
+        mon = exe_monitor::type_id::create("mon", this);
+    endfunction
+endclass
+
 class reset_agent extends base_agent #(reset_item);
     `uvm_component_utils(reset_agent)
 

@@ -25,11 +25,6 @@ class base_coverage extends uvm_subscriber #(fetch_item);
             bins forward = {[0:$]};
             bins backward = {[$:-1]};
         }
-        cp_j_im: coverpoint trans.j_imm {
-            bins positive = {[1:$]};  
-            bins negative = {[$:-1]}; 
-            bins zero     = {0};
-        }
         cp_b_im: coverpoint trans.b_imm {
             bins positive = {[1:$]};  
             bins negative = {[$:-1]}; 
@@ -56,19 +51,12 @@ class base_coverage extends uvm_subscriber #(fetch_item);
     endgroup
     
     covergroup j_b_immediate;
-        cp_j: coverpoint trans.inst_type {
-            bins i_type = {JAL};
-        }
         cp_b: coverpoint trans.inst_type {
-            bins i_type = {BNE,BEQ};
-        }
-        cp_j_imm: coverpoint trans.j_imm {
-            option.auto_bin_max = 64;
+            bins i_type = {BEQ};
         }
         cp_b_imm: coverpoint trans.b_imm {
             option.auto_bin_max = 64;
         }
-        cross_j_imm: cross cp_j, cp_j_imm;
         cross_b_imm: cross cp_b, cp_b_imm;
     endgroup
 
