@@ -249,13 +249,13 @@ class im_scoreboard extends base_scoreboard;
                 signed_b_imm = {{19{e_b_imm[12]}}, e_b_imm};
 
                 if (e_rs1 == e_rd_hz) begin
-                    `uvm_info("HAHA", $sformatf("rs1 hazard: e_rs1: %d, e_rd_hz: %d", e_rs1, e_rd_hz), UVM_LOW)
+                    `uvm_info("HAZARD BEQ", $sformatf("rs1 hazard: e_rs1: %d, e_rd_hz: %d", e_rs1, e_rd_hz), UVM_LOW)
                     branch_taken = (expected_result_hz == reg_mem[e_rs2]);
                     expected_result_hz = -1;
                     e_rd_hz = -1;
                     hazard = 1;
                 end else if (e_rs2 == e_rd_hz) begin
-                    `uvm_info("HAHA", $sformatf("rs2 hazard: e_rs2: %d, e_rd_hz: %d", e_rs2, e_rd_hz), UVM_LOW)
+                    `uvm_info("HAZARD BEQ", $sformatf("rs2 hazard: e_rs2: %d, e_rd_hz: %d", e_rs2, e_rd_hz), UVM_LOW)
                     branch_taken = (reg_mem[e_rs1] == expected_result_hz);
                     expected_result_hz = -1;
                     e_rd_hz = -1;
