@@ -6,6 +6,7 @@
 `uvm_analysis_imp_decl(_wb)    
 `uvm_analysis_imp_decl(_dc)    
 `uvm_analysis_imp_decl(_exe)    
+`uvm_analysis_imp_decl(_mem)    
 
 class base_scoreboard #(type T = uvm_sequence_item) extends uvm_scoreboard;
     `uvm_component_utils(base_scoreboard)
@@ -14,22 +15,27 @@ class base_scoreboard #(type T = uvm_sequence_item) extends uvm_scoreboard;
     uvm_analysis_imp_wb #(wb_item, base_scoreboard) wb_imp;
     uvm_analysis_imp_dc #(decode_item, base_scoreboard) dc_imp;
     uvm_analysis_imp_exe #(exe_item, base_scoreboard) exe_imp;
+    uvm_analysis_imp_mem #(mem_item, base_scoreboard) mem_imp;
 
-    fetch_item fetch_arr[$];
-    wb_item wb_arr[$];
-    decode_item dc_arr[$];
-    exe_item exe_arr[$];
+    fetch_item      fetch_arr[$];
+    wb_item         wb_arr[$];
+    decode_item     dc_arr[$];
+    exe_item        exe_arr[$];
+    mem_item        mem_arr[$];
 
-    fetch_item fetch_packet;
-    fetch_item fetch_packet_tmp;
+    fetch_item      fetch_packet;
+    fetch_item      fetch_packet_tmp;
 
-    wb_item wb_packet;
-    decode_item dc_packet;
+    wb_item         wb_packet;
 
-    decode_item dc_packet_tmp;
-    exe_item    exe_packet;
+    decode_item     dc_packet;
+    decode_item     dc_packet_tmp;
 
-    int         stage = 0;
+    exe_item        exe_packet;
+
+    mem_item        mem_packet;
+
+    int             stage = 0;
     logic [31:0]    expected_result_hz;
     logic [4:0]     e_rd_hz;
 
@@ -39,6 +45,7 @@ class base_scoreboard #(type T = uvm_sequence_item) extends uvm_scoreboard;
         wb_imp = new("wb_imp", this);
         dc_imp = new("dc_imp", this);
         exe_imp = new("exe_imp", this);
+        mem_imp = new("mem_imp", this);
     endfunction
     
     function void write_fetch(fetch_item item);
@@ -59,6 +66,11 @@ class base_scoreboard #(type T = uvm_sequence_item) extends uvm_scoreboard;
     function void write_exe(exe_item item);
         exe_arr.push_back(item);
         `uvm_info(get_type_name(), "Push item to exe arr", UVM_HIGH)
+    endfunction
+
+    function void write_mem(mem_item item);
+        mem_arr.push_back(item);
+        `uvm_info(get_type_name(), "Push item to mem arr", UVM_HIGH)
     endfunction
 endclass
 
@@ -85,36 +97,46 @@ class im_scoreboard extends base_scoreboard;
     virtual task run_phase(uvm_phase phase);
         super.run_phase(phase);
         forever begin
-            wait(wb_arr.size()!=0 || exe_arr.size()!=0);
+            wait(wb_arr.size()!=0 || exe_arr.size()!=0 || mem_arr.size() !=0);
             if (wb_arr.size()!=0) begin
+                $display("haha");
                 stage = 1;
                 fetch_packet = fetch_arr.pop_front();
                 wb_packet    = wb_arr.pop_front();
                 dc_packet    = dc_arr.pop_front();
-                compare(fetch_packet, wb_packet, dc_packet, , stage);
+                compare(fetch_packet, wb_packet, dc_packet, null, null, stage);
                 stage = 0;
+            end else if (mem_arr.size()!=0) begin
+                $display("hehe");
+                fetch_packet = fetch_arr.pop_front();
+                dc_packet    = dc_arr.pop_front();
+                mem_packet   = mem_arr.pop_front();
+                compare(fetch_packet, null, dc_packet, , mem_packet, stage);
             end else if (exe_arr.size()!=0) begin
+                $display("hoho");
                 stage = 2;
                 fetch_packet = fetch_arr.pop_front();
                 exe_packet   = exe_arr.pop_front();
                 dc_packet    = dc_arr.pop_front();
-                compare(fetch_packet, , dc_packet, exe_packet, stage);
+                compare(fetch_packet, null, dc_packet, exe_packet, null, stage);
                 stage = 0;
             end
         end
     endtask
 
-    task compare(fetch_item fetch_packet, wb_item wb_packet = null, decode_item dc_packet = null, exe_item exe_packet = null, int stage);
+    task compare(fetch_item fetch_packet, wb_item wb_packet = null, decode_item dc_packet = null, exe_item exe_packet = null, mem_item mem_packet = null, int stage);
         bit is_match = 1;
         logic [6:0] opcode;
         logic [4:0] e_rs1, e_rs2, e_rd;
         logic signed [11:0] e_imm;
         logic signed [31:0] signed_imm;
         logic signed [31:0] expected_result;
+        logic unsigned [31:0] e_addr;
+        logic signed [31:0] e_load_data;
         logic [31:0] e_next_PC;
         logic [2:0] funct3;
         logic       funct7_5;
-        int option = 0;
+        int         option = 0;
         logic       hazard = 0;
         opcode = fetch_packet.instruction[6:0];
         if (opcode == 7'b0110011 && stage == 2) begin // R-type -> BEQ
@@ -166,6 +188,26 @@ class im_scoreboard extends base_scoreboard;
             endcase
             expected_result_hz = expected_result;
             e_rd_hz = e_rd;
+
+            fetch_arr.push_front(fetch_packet);
+            fetch_packet = fetch_packet_tmp;
+            opcode = fetch_packet_tmp.instruction[6:0];
+            dc_packet_tmp = dc_arr.pop_front();
+            dc_arr.push_front(dc_packet);
+            dc_packet = dc_packet_tmp;
+        end else if (opcode == 7'b0000011 && stage == 2) begin
+            fetch_packet_tmp = fetch_arr.pop_front();
+            `uvm_info(get_type_name(), "Decoding Load-type instruction (LW)", UVM_HIGH)
+
+            e_rd  = fetch_packet.instruction[11:7];
+            e_rs1 = fetch_packet.instruction[19:15];
+            e_imm = fetch_packet.instruction[31:20];
+            signed_imm = {{20{e_imm[11]}}, e_imm};
+            e_addr = reg_mem[e_rs1] + signed_imm;
+            e_load_data = d_mem[e_addr%64];
+
+            e_rd_hz = e_rd;
+            expected_result_hz = e_load_data;
 
             fetch_arr.push_front(fetch_packet);
             fetch_packet = fetch_packet_tmp;
@@ -268,59 +310,36 @@ class im_scoreboard extends base_scoreboard;
                     end else begin
                         e_next_PC = fetch_packet.PC_o + 12;
                     end
-
+                    $display(exe_packet.PC_F);
                     if (e_rs1 !== dc_packet.rs1 || 
                         e_rs2 !== dc_packet.rs2 || 
                         e_next_PC !== exe_packet.PC_F) begin
                         is_match = 0;
                     end
                     if (branch_taken) begin
-                        // if (hazard) begin
-                        //     while (dc_arr.size() > 1) begin
-                        //         dc_packet = dc_arr.pop_back();
-                        //     end
-                        //     while (fetch_arr.size() > 1) begin
-                        //         fetch_arr.pop_back();
-                        //     end
-                        // end else begin
-                        //     while (dc_arr.size() > 0) begin
-                        //         dc_packet = dc_arr.pop_back();
-                        //     end
-                        //     while (fetch_arr.size() > 0) begin
-                        //         fetch_arr.pop_back();
-                        //     end
-                        // end
-                        // if (dc_arr.size() > 0) begin
-                        //     dc_packet = dc_arr.pop_back(); // actually also need to pop two from decode too, but at the moment
-                        //                                 // this packet pass, only one dc_packet is available in the array, 
-                        //                                 // therefore pop one in the monitor
-                        // end
+                        fetch_arr.pop_back();  // pop two from fetch
                         fetch_arr.pop_back();
-                        fetch_arr.pop_back();
-                        dc_arr.pop_back();
+                        dc_arr.pop_back();     // pop two from dc, pop one here, monitor will pop the future one
                     end
                 end
             end
             7'b0000011: begin
-                logic unsigned [31:0] e_addr;
-                logic signed [31:0] e_load_data;
                 `uvm_info(get_type_name(), "Decoding Load-type instruction (LW)", UVM_HIGH)
 
                 e_rd  = fetch_packet.instruction[11:7];
                 e_rs1 = fetch_packet.instruction[19:15];
                 e_imm = fetch_packet.instruction[31:20];
-
                 signed_imm = {{20{e_imm[11]}}, e_imm};
 
                 e_addr = reg_mem[e_rs1] + signed_imm;
 
                 e_load_data = d_mem[e_addr%64]; 
-
-                if (e_rd != fetch_packet.rd ||
-                    e_rs1 != fetch_packet.rs1 ||
-                    e_addr != fetch_packet.ALU_o ||
-                    e_load_data != fetch_packet.mem_data_o) begin
+                $display(d_mem[7]);
+                if (e_rd != wb_packet.rd ||
+                    e_rs1 != dc_packet.rs1 ||
+                    e_load_data != wb_packet.result_W) begin
                     is_match = 0;
+                    $display(signed_imm);
                 end
 
                 if (is_match) begin
@@ -331,7 +350,7 @@ class im_scoreboard extends base_scoreboard;
                 logic unsigned [31:0] e_addr;
                 logic signed [31:0] e_store_data;
                 `uvm_info(get_type_name(), "Decoding Store-type instruction (SW)", UVM_HIGH)
-                
+                $display(fetch_packet.instruction);
                 e_rs1 = fetch_packet.instruction[19:15];
                 e_rs2 = fetch_packet.instruction[24:20];
                 e_imm = {fetch_packet.instruction[31:25], fetch_packet.instruction[11:7]};
@@ -339,11 +358,11 @@ class im_scoreboard extends base_scoreboard;
 
                 e_addr = reg_mem[e_rs1] + signed_imm;
                 e_store_data = reg_mem[e_rs2];
-
-                if (e_rs1 != fetch_packet.rs1 ||
-                    e_rs2 != fetch_packet.rs2 ||
-                    e_addr != fetch_packet.ALU_o ||
-                    e_store_data != fetch_packet.store_data_o) begin
+                $display(dc_packet.rs1);
+                if (e_rs1 !== dc_packet.rs1 ||
+                    e_rs2 !== dc_packet.rs2 ||
+                    e_addr !== mem_packet.addr ||
+                    e_store_data !== mem_packet.wdata) begin
                     is_match = 0;
                 end
 

@@ -17,7 +17,11 @@ module CPU_Top #(
     output  [4:0]                   rs2,
     output  [ADDR_WIDTH - 1 : 0]    PC_F,
     output                          Branch_E_o,
-    output                          PCSrc_E_o
+    output                          PCSrc_E_o,
+    output                          MemWrite_o,
+    output  [ADDR_WIDTH - 1 : 0]    addr,
+    output  [DAT_WIDTH - 1 : 0]     wdata,
+    output                          PC_Write_o
 );
 
 logic                           PCSrc_E;
@@ -180,6 +184,7 @@ F_Hazard F_Hazard (
     .ForwardA_E(ForwardA_E),
     .ForwardB_E(ForwardB_E)
 );
+assign PC_Write_o = PC_Write;
 // Fetch
 assign PC_o = Fetch.PCF;
 
@@ -195,5 +200,10 @@ assign result_W_o = Result_W;
 assign PC_F = Fetch.PC_F;
 assign Branch_E_o = Branch_E;
 assign PCSrc_E_o = PCSrc_E;
+
+// Mem
+assign MemWrite_o = MemWrite_M;
+assign addr = ALU_result_M;
+assign wdata = wdata_M;
 
 endmodule

@@ -1,9 +1,15 @@
 interface cpu_interface(input logic clk);
     logic rst_n;
+    logic PC_Write;
 
     clocking tb_cb @(posedge clk);
+        input  PC_Write;
         output rst_n;
     endclocking
+
+    modport DUT (
+        output PC_Write
+    );
 endinterface
 
 interface fetch_interface (input logic clk);
@@ -64,5 +70,19 @@ interface exe_interface (input logic clk);
 
     modport DUT (
         output PC_F, Branch_E
+    );
+endinterface
+
+interface mem_interface (input logic clk);
+    logic [31:0] addr;
+    logic [31:0] wdata;
+    logic        MemWrite;   
+
+    clocking tb_cb @(posedge clk);
+        input addr, wdata, MemWrite;
+    endclocking
+
+    modport DUT (
+        output addr, wdata, MemWrite
     );
 endinterface

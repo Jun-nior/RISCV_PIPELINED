@@ -152,7 +152,7 @@ always @(posedge clk or negedge rst_n) begin
         rd_r      <= 5'h0;
         PC_D_r     <= 32'h0;
         PC_4D_r    <= 32'h0;
-    end else if (Stall_E || PCSrc_E) begin
+    end else if (PCSrc_E) begin
         RegWrite_r <= 1'b0;
         ALUSrc_r   <= 1'b0;
         MemWrite_r <= 1'b0;
@@ -160,6 +160,15 @@ always @(posedge clk or negedge rst_n) begin
         Branch_r   <= 1'b0;
         MemtoReg_r <= 1'b0;
         control_o_r <= 4'h0;
+    end else if (Stall_E) begin
+        RegWrite_r <= 1'b0;
+        ALUSrc_r   <= 0;
+        MemWrite_r <= 0;
+        MemRead_r  <= 1'b0;
+        Branch_r   <= 0;
+        MemtoReg_r <= 0;
+        control_o_r <= 0;
+        Stall_E     <= 0;
     end else begin
         RegWrite_r <= RegWrite_D;
         ALUSrc_r   <= ALUSrc_D;

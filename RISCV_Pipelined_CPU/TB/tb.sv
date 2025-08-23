@@ -28,6 +28,10 @@ module CPU_Top_tb_top;
         .clk(clk)
     );
 
+    mem_interface mem_if (
+        .clk(clk)
+    );
+
     CPU_Top dut (
         .clk(clk),
         .rst_n(cpu_if.rst_n),
@@ -41,7 +45,11 @@ module CPU_Top_tb_top;
         .rs2(dc_if.rs2),
         .PC_F(exe_if.PC_F),
         .Branch_E_o(exe_if.Branch_E),
-        .PCSrc_E_o(dc_if.PCSrc_E)
+        .PCSrc_E_o(dc_if.PCSrc_E),
+        .MemWrite_o(mem_if.MemWrite),
+        .wdata(mem_if.wdata),
+        .addr(mem_if.addr),
+        .PC_Write_o(cpu_if.PC_Write)
     );
 
     initial begin
@@ -57,6 +65,7 @@ module CPU_Top_tb_top;
         uvm_config_db#(virtual writeback_interface)::set(null,"*","wb_vif",wb_if);
         uvm_config_db#(virtual decode_interface)::set(null,"*","dc_vif",dc_if);
         uvm_config_db#(virtual exe_interface)::set(null,"*","exe_vif",exe_if);
+        uvm_config_db#(virtual mem_interface)::set(null,"*","mem_vif",mem_if);
         run_test("base_test");
     end
 

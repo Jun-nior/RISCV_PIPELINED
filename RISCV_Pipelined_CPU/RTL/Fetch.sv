@@ -47,7 +47,7 @@ Program_Counter Program_Counter(
 // );
 
 
-assign InsF = tb_wdata_i;
+assign InsF = (PC_Write) ? tb_wdata_i : InsF;
 
 AdderPC Adder_PC(
     .PC_o(PCF),

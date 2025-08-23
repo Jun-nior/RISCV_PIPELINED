@@ -125,6 +125,18 @@ class exe_item extends base_item;
     endfunction
 endclass
 
+class mem_item extends base_item;
+    logic   [31:0]   addr;
+    logic   [31:0]   wdata;
+    `uvm_object_utils_begin(mem_item)
+        `uvm_field_int(addr, UVM_ALL_ON | UVM_HEX)
+        `uvm_field_int(wdata, UVM_ALL_ON | UVM_HEX)
+    `uvm_object_utils_end
+    function new (string name = "mem_item");
+        super.new(name);
+    endfunction
+endclass
+
 class reset_item extends base_item;
     rand logic rst_n;
     `uvm_object_utils_begin(reset_item)

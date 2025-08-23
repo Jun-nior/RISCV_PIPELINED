@@ -34,13 +34,13 @@ class fetch_monitor extends base_monitor #(fetch_item);
         @(posedge fetch_vif.tb_cb);
         forever begin
             @(fetch_vif.tb_cb);
-            // if (!$isunknown(fetch_vif.ins_i)) begin
+            if (cpu_vif.tb_cb.PC_Write) begin
                 item = fetch_item::type_id::create("item");
                 item.PC_o = fetch_vif.tb_cb.PC_o;
                 item.instruction = fetch_vif.ins_i;
                 `uvm_info(get_type_name(), $sformatf("Fetch Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
-            // end
+            end
         end
     endtask
 endclass
@@ -49,6 +49,7 @@ class writeback_monitor extends base_monitor #(wb_item);
     `uvm_component_utils(writeback_monitor)
 
     virtual writeback_interface wb_vif;
+    virtual cpu_interface   cpu_vif;
 
     function new (string name = "writeback_monitor", uvm_component parent);
         super.new(name,parent);
@@ -58,6 +59,9 @@ class writeback_monitor extends base_monitor #(wb_item);
         super.build_phase(phase);
         if (!uvm_config_db#(virtual writeback_interface)::get(this,"","wb_vif",wb_vif)) begin
              `uvm_fatal("NOVIF", "Cannot get virtual interface handle for wb_vif")
+        end
+        if (!uvm_config_db#(virtual cpu_interface)::get(this,"","cpu_vif",cpu_vif)) begin
+             `uvm_fatal("NOVIF", "Cannot get virtual interface handle for cpu_vif")
         end
     endfunction
 
@@ -105,7 +109,7 @@ class decode_monitor extends base_monitor #(decode_item);
         end
         forever begin
             @(posedge dc_vif.tb_cb);
-            if (!PCSrc_E_temp) begin
+            if (!PCSrc_E_temp && cpu_vif.tb_cb.PC_Write) begin
                 item = decode_item::type_id::create("item");
                 item.rs1 = dc_vif.tb_cb.rs1;
                 item.rs2 = dc_vif.tb_cb.rs2;
@@ -121,6 +125,7 @@ class exe_monitor extends base_monitor #(exe_item);
     `uvm_component_utils(exe_monitor)
 
     virtual exe_interface exe_vif;
+    virtual cpu_interface   cpu_vif;
 
     function new (string name = "exe_monitor", uvm_component parent);
         super.new(name,parent);
@@ -130,6 +135,9 @@ class exe_monitor extends base_monitor #(exe_item);
         super.build_phase(phase);
         if (!uvm_config_db#(virtual exe_interface)::get(this,"","exe_vif",exe_vif)) begin
              `uvm_fatal("NOVIF", "Cannot get virtual interface handle for exe_vif")
+        end
+        if (!uvm_config_db#(virtual cpu_interface)::get(this,"","cpu_vif",cpu_vif)) begin
+             `uvm_fatal("NOVIF", "Cannot get virtual interface handle for cpu_vif")
         end
     endfunction
 
@@ -141,6 +149,41 @@ class exe_monitor extends base_monitor #(exe_item);
                 item = exe_item::type_id::create("item");
                 item.PC_F = exe_vif.tb_cb.PC_F;
                 `uvm_info(get_type_name(), $sformatf("EXE Monitor get: \n%s", item.sprint()), UVM_HIGH)
+                item_collected_port.write(item);
+            end
+        end
+    endtask
+endclass
+
+class mem_monitor extends base_monitor #(mem_item);
+    `uvm_component_utils(mem_monitor)
+
+    virtual mem_interface mem_vif;
+    virtual cpu_interface   cpu_vif;
+
+    function new (string name = "mem_monitor", uvm_component parent);
+        super.new(name,parent);
+    endfunction
+
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        if (!uvm_config_db#(virtual mem_interface)::get(this,"","mem_vif",mem_vif)) begin
+             `uvm_fatal("NOVIF", "Cannot get virtual interface handle for mem_vif")
+        end
+        if (!uvm_config_db#(virtual cpu_interface)::get(this,"","cpu_vif",cpu_vif)) begin
+             `uvm_fatal("NOVIF", "Cannot get virtual interface handle for cpu_vif")
+        end
+    endfunction
+
+    virtual task run_phase (uvm_phase phase);
+        mem_item item;
+        forever begin
+            @(posedge mem_vif.tb_cb);
+            if (mem_vif.tb_cb.MemWrite) begin
+                item = mem_item::type_id::create("item");
+                item.addr = mem_vif.tb_cb.addr;
+                item.wdata = mem_vif.tb_cb.wdata;
+                `uvm_info(get_type_name(), $sformatf("Mem Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
             end
         end

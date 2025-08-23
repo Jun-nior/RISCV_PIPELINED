@@ -10,7 +10,7 @@ module LW_Hazard (
 );
 
 logic   lw_hazard;
-assign  lw_hazard = MemRead_E && (rd_E == rs1_D || rd_E == rs2_D);
+assign  lw_hazard = MemRead_E && (rd_E === rs1_D || rd_E === rs2_D);
 
 assign  PC_Write = !lw_hazard; // freeze PC
 assign  IF_ID_Write = !lw_hazard; // freeze IF/ID pipeline

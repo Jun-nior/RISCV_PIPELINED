@@ -18,7 +18,6 @@ always @(posedge clk or negedge rst_n) begin
         for (int i = 0; i < 64; i++) begin
             cpu_mem[i] <= i%64;
         end
-        cpu_mem[7] <= 12;
     end else if (MemWrite) begin
         cpu_mem[addr%64] <= wdata;
     end

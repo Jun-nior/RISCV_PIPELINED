@@ -89,6 +89,21 @@ class exe_agent extends base_agent #(exe_item);
     endfunction
 endclass
 
+class mem_agent extends base_agent #(mem_item);
+    `uvm_component_utils(mem_agent)
+
+    function new (string name = "mem_agent", uvm_component parent);
+        super.new(name,parent);
+    endfunction
+
+    virtual function void build_phase (uvm_phase phase);
+        is_active = UVM_PASSIVE;
+        super.build_phase(phase);
+        
+        mon = mem_monitor::type_id::create("mon", this);
+    endfunction
+endclass
+
 class reset_agent extends base_agent #(reset_item);
     `uvm_component_utils(reset_agent)
 

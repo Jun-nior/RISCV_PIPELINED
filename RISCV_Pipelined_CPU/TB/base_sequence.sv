@@ -17,10 +17,13 @@ class im_add_sequence extends base_sequence#(fetch_item);
     virtual task body();
         repeat(1000) begin
             // `uvm_do(req)
-            `uvm_do_with(req, {inst_type inside {ADD, OR, AND, XOR, ADDI, ORI, ANDI , XORI, BEQ};})
-            // `uvm_do_with(req, {inst_type == ADD; rs1 == 2; rs2 == 4; rd == 3;})
-            // `uvm_do_with(req, {inst_type == BEQ; rs1 == 3; rs2 == 6; b_imm == 100;})    
-            // `uvm_do_with(req, {inst_type inside {ADD,BEQ};})
+            `uvm_do_with(req, {inst_type inside {ADD, OR, AND, XOR, ADDI, ORI, ANDI , XORI, SW, BEQ, LW};})
+            // `uvm_do_with(req, {inst_type == LW; rs1 == 15; rd == 14; imm == 100;})
+            // `uvm_do_with(req, {inst_type == BEQ;})
+            // `uvm_do_with(req, {inst_type == LW;})   
+            // `uvm_do_with(req, {inst_type == LW; rs1 == 2; rd == 10; imm == 10;})
+            // `uvm_do_with(req, {inst_type == BEQ; rs1 == 10; rs2 == 12; b_imm == 100;})    
+            // `uvm_do_with(req, {inst_type inside {LW,SW,BEQ};})
             `uvm_info($sformatf("%s", req.inst_type), $sformatf("Sending instruction %h", req.instruction), UVM_LOW)
         end
         `uvm_do_with(req, {instruction == 'hx;})
