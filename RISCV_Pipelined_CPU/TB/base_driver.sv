@@ -31,7 +31,7 @@ class im_driver extends base_driver#(fetch_item);
             fetch_vif.tb_cb.ins_i <= req.instruction;
             @(fetch_vif.tb_cb);
             seq_item_port.item_done();
-            // item_driven_port.write(req);
+            item_driven_port.write(req);
         end
     endtask
 endclass

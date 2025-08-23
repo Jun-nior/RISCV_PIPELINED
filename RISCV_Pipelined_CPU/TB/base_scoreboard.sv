@@ -99,7 +99,6 @@ class im_scoreboard extends base_scoreboard;
         forever begin
             wait(wb_arr.size()!=0 || exe_arr.size()!=0 || mem_arr.size() !=0);
             if (wb_arr.size()!=0) begin
-                $display("haha");
                 stage = 1;
                 fetch_packet = fetch_arr.pop_front();
                 wb_packet    = wb_arr.pop_front();
@@ -107,13 +106,11 @@ class im_scoreboard extends base_scoreboard;
                 compare(fetch_packet, wb_packet, dc_packet, null, null, stage);
                 stage = 0;
             end else if (mem_arr.size()!=0) begin
-                $display("hehe");
                 fetch_packet = fetch_arr.pop_front();
                 dc_packet    = dc_arr.pop_front();
                 mem_packet   = mem_arr.pop_front();
                 compare(fetch_packet, null, dc_packet, , mem_packet, stage);
             end else if (exe_arr.size()!=0) begin
-                $display("hoho");
                 stage = 2;
                 fetch_packet = fetch_arr.pop_front();
                 exe_packet   = exe_arr.pop_front();
@@ -310,7 +307,6 @@ class im_scoreboard extends base_scoreboard;
                     end else begin
                         e_next_PC = fetch_packet.PC_o + 12;
                     end
-                    $display(exe_packet.PC_F);
                     if (e_rs1 !== dc_packet.rs1 || 
                         e_rs2 !== dc_packet.rs2 || 
                         e_next_PC !== exe_packet.PC_F) begin
@@ -334,12 +330,10 @@ class im_scoreboard extends base_scoreboard;
                 e_addr = reg_mem[e_rs1] + signed_imm;
 
                 e_load_data = d_mem[e_addr%64]; 
-                $display(d_mem[7]);
                 if (e_rd != wb_packet.rd ||
                     e_rs1 != dc_packet.rs1 ||
                     e_load_data != wb_packet.result_W) begin
                     is_match = 0;
-                    $display(signed_imm);
                 end
 
                 if (is_match) begin
@@ -350,7 +344,6 @@ class im_scoreboard extends base_scoreboard;
                 logic unsigned [31:0] e_addr;
                 logic signed [31:0] e_store_data;
                 `uvm_info(get_type_name(), "Decoding Store-type instruction (SW)", UVM_HIGH)
-                $display(fetch_packet.instruction);
                 e_rs1 = fetch_packet.instruction[19:15];
                 e_rs2 = fetch_packet.instruction[24:20];
                 e_imm = {fetch_packet.instruction[31:25], fetch_packet.instruction[11:7]};
@@ -358,7 +351,6 @@ class im_scoreboard extends base_scoreboard;
 
                 e_addr = reg_mem[e_rs1] + signed_imm;
                 e_store_data = reg_mem[e_rs2];
-                $display(dc_packet.rs1);
                 if (e_rs1 !== dc_packet.rs1 ||
                     e_rs2 !== dc_packet.rs2 ||
                     e_addr !== mem_packet.addr ||

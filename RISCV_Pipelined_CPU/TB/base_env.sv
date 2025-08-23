@@ -32,10 +32,14 @@ class base_env extends uvm_env;
     function void connect_phase (uvm_phase phase);
         super.connect_phase(phase);
         fetch_agt.mon.item_collected_port.connect(this.scb.fetch_imp);
+        fetch_agt.drv.item_driven_port.connect(this.cov.fetch_imp);
         wb_agt.mon.item_collected_port.connect(this.scb.wb_imp);
+        wb_agt.mon.item_driven_port.connect(this.cov.wb_imp);
         dc_agt.mon.item_collected_port.connect(this.scb.dc_imp);
+        dc_agt.mon.item_driven_port.connect(this.cov.dc_imp);
         exe_agt.mon.item_collected_port.connect(this.scb.exe_imp);
+        exe_agt.mon.item_driven_port.connect(this.cov.exe_imp);
         mem_agt.mon.item_collected_port.connect(this.scb.mem_imp);
-        // fetch_agt.drv.item_driven_port.connect(this.cov.analysis_export);
+        mem_agt.mon.item_driven_port.connect(this.cov.mem_imp);
     endfunction
 endclass

@@ -1,10 +1,11 @@
 class base_monitor #(type T= uvm_sequence_item) extends uvm_monitor;
     `uvm_component_utils(base_monitor)
     uvm_analysis_port #(T) item_collected_port;
-
+    uvm_analysis_port #(T) item_driven_port;
     function new (string name = "base_monitor", uvm_component parent);
         super.new(name,parent);
         item_collected_port = new("item_collected_port", this);
+        item_driven_port = new("item_driven_port", this);
     endfunction
 endclass
 
@@ -40,6 +41,7 @@ class fetch_monitor extends base_monitor #(fetch_item);
                 item.instruction = fetch_vif.ins_i;
                 `uvm_info(get_type_name(), $sformatf("Fetch Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
+                item_driven_port.write(item);
             end
         end
     endtask
@@ -75,6 +77,7 @@ class writeback_monitor extends base_monitor #(wb_item);
                 item.result_W = wb_vif.tb_cb.result_W;
                 `uvm_info(get_type_name(), $sformatf("WB Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
+                item_driven_port.write(item);
             end
         end
     endtask
@@ -115,6 +118,7 @@ class decode_monitor extends base_monitor #(decode_item);
                 item.rs2 = dc_vif.tb_cb.rs2;
                 `uvm_info(get_type_name(), $sformatf("DC Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
+                item_driven_port.write(item);
             end
             PCSrc_E_temp = dc_vif.tb_cb.PCSrc_E;
         end
@@ -150,6 +154,7 @@ class exe_monitor extends base_monitor #(exe_item);
                 item.PC_F = exe_vif.tb_cb.PC_F;
                 `uvm_info(get_type_name(), $sformatf("EXE Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
+                item_driven_port.write(item);
             end
         end
     endtask
@@ -185,6 +190,7 @@ class mem_monitor extends base_monitor #(mem_item);
                 item.wdata = mem_vif.tb_cb.wdata;
                 `uvm_info(get_type_name(), $sformatf("Mem Monitor get: \n%s", item.sprint()), UVM_HIGH)
                 item_collected_port.write(item);
+                item_driven_port.write(item);
             end
         end
     endtask
