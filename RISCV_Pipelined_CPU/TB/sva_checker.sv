@@ -3,41 +3,59 @@ module sva_checker #(
     parameter ADDR_WIDTH = 32
 )
 (
-    input clk,
-    input rst_n,
-    input MemRead,
-    input MemWrite,
-    input RegWrite,
-    input Branch,
-    input [ADDR_WIDTH - 1 : 0] PC
+    input                           clk,
+    input                           rst_n,
+    input                           PC_Write,
+
+    input   [ADDR_WIDTH - 1 : 0]    PC,
+    
+    input                           RegWrite_W,
+    input   [4:0]                   rd_W,
+    input   [DAT_WIDTH - 1 : 0]     result_W,
+
+    input   [4:0]                   rs1,
+    input   [4:0]                   rs2,
+    input                           PCSrc_E,
+    input                           RegWrite_M,
+    input                           Branch_E,
+
+    input   [ADDR_WIDTH - 1 : 0]    addr,
+    input   [DAT_WIDTH - 1 : 0]     wdata,
+    input                           MemWrite
 );
 
 pc_on_reset: assert property(
     @(posedge clk)
     $fell(rst_n) |-> (PC == 32'b0)
-) `uvm_info("ASSERT", "PASS", UVM_HIGH)
-else `uvm_error("ASSERT", "FAIL")
+) `uvm_info("ASSERT RESET", "PASS", UVM_LOW)
+else `uvm_error("ASSERT RESET", "FAIL")
 
-a_mem_read_write_exclusive: assert property (
-    @(posedge clk) 
+stall_by_PC_Write: assert property(
+    @(posedge clk)
         disable iff (!rst_n)
-        !(MemRead && MemWrite)
-) `uvm_info("ASSERT", "PASS", UVM_HIGH)
-else `uvm_error("ASSERT", "FAIL")
+            $fell(PC_Write) |-> ##1 $stable(PC)
+) `uvm_info("ASSERT STALL", "PASS", UVM_LOW)
+else `uvm_error("ASSERT STALL", "FAIL")
 
-a_store_no_reg_write: assert property (
-    @(posedge clk) 
+valid_wb: assert property(
+    @(posedge clk)
         disable iff (!rst_n)
-        MemWrite |-> !RegWrite
-) `uvm_info("ASSERT", "PASS", UVM_HIGH)
-else `uvm_error("ASSERT", "FAIL")
+            (RegWrite_W) |-> !$isunknown(rd_W) && !$isunknown(result_W)
+) `uvm_info("ASSERT WB", "PASS", UVM_LOW)
+else `uvm_error("ASSERT WB", "FAIL")
 
-
-a_branch_no_reg_write: assert property (
-    @(posedge clk) 
+valid_write_mem: assert property(
+    @(posedge clk)
         disable iff (!rst_n)
-        Branch |-> !RegWrite
-) `uvm_info("ASSERT", "PASS", UVM_HIGH)
-else `uvm_error("ASSERT", "FAIL")
+            (MemWrite) |-> !$isunknown(addr) && !$isunknown(wdata) && !(RegWrite_M)
+) `uvm_info("ASSERT WM", "PASS", UVM_LOW)
+else `uvm_error("ASSERT WM", "FAIL")
+
+branch_check: assert property(
+    @(posedge clk)
+        disable iff (!rst_n)
+            (PCSrc_E) |-> Branch_E
+) `uvm_info("ASSERT BRANCH", "PASS", UVM_LOW)
+else `uvm_error("ASSERT BRANCH", "FAIL")
 
 endmodule

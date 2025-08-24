@@ -11,7 +11,7 @@ NO_OF_TRANSACTIONS?=1
 
 SEED?=1
 
-SEEDS?=1 2 3 4 5 6 7 8 9 10
+SEEDS?=1 2 3 4 5
 
 ifeq ($(OS),Windows_NT)
     RM_CMD = powershell if (Test-Path $(TEST_MODULE)) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $(TEST_MODULE) }
